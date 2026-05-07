@@ -17,11 +17,11 @@ async function bootstrap() {
 
   // Enable CORS
   const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [];
-  
+
   if (allowedOrigins.length === 0) {
     throw new Error('CORS_ORIGINS environment variable is required');
   }
-  
+
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
