@@ -61,9 +61,13 @@ export class CustomersService {
     page = 1,
     limit = 10,
     search?: string,
+    includeDeleted = false,
   ) {
     const query = this.customerRepository
       .createQueryBuilder('customer')
+
+      // Load assigned user relation
+      .leftJoinAndSelect('customer.assignedToUser', 'assignedToUser')
 
       // Multi-tenancy enforcement
       .where(
@@ -71,10 +75,12 @@ export class CustomersService {
         {
           organizationId: currentUser.organizationId,
         },
-      )
+      );
 
-      // Soft delete filtering
-      .andWhere('customer.deletedAt IS NULL');
+    // Soft delete filtering (optional)
+    if (!includeDeleted) {
+      query.andWhere('customer.deletedAt IS NULL');
+    }
 
     // Search support
     if (search) {
@@ -88,6 +94,11 @@ export class CustomersService {
 
     // Pagination
     query.skip((page - 1) * limit).take(limit);
+
+    // Include deleted records if requested
+    if (includeDeleted) {
+      query.withDeleted();
+    }
 
     const [customers, total] =
       await query.getManyAndCount();
@@ -193,27 +204,16 @@ export class CustomersService {
   ) {
     const result = await this.dataSource.transaction(
       async (manager) => {
-        // Lock rows during assignment
-        const activeAssignments =
-          await manager
-            .createQueryBuilder(
-              Customer,
-              'customer',
-            )
-            .setLock('pessimistic_write')
-            .where(
-              'customer.assignedTo = :userId',
-              {
-                userId,
-              },
-            )
-            .andWhere(
-              'customer.deletedAt IS NULL',
-            )
-            .getCount();
+        // Lock and get all assigned customers for this user
+        const assignedCustomers = await manager
+          .createQueryBuilder(Customer, 'customer')
+          .setLock('pessimistic_write')
+          .where('customer.assignedTo = :userId', { userId })
+          .andWhere('customer.deletedAt IS NULL')
+          .getMany();
 
-        // Prevent exceeding limit
-        if (activeAssignments >= 5) {
+        // Check count after locking
+        if (assignedCustomers.length >= 5) {
           throw new BadRequestException(
             'User already has maximum 5 active customers',
           );
@@ -297,5 +297,44 @@ export class CustomersService {
     );
 
     return this.findOne(id, currentUser);
+  }
+
+  // UNASSIGN CUSTOMER
+  async unassignCustomer(
+    customerId: string,
+    currentUser: any,
+  ) {
+    const customer = await this.findOne(customerId, currentUser);
+
+    if (!customer.assignedTo) {
+      throw new BadRequestException(
+        'Customer is not assigned to anyone',
+      );
+    }
+
+    await this.customerRepository.update(
+      {
+        id: customerId,
+
+        // Multi-tenancy enforcement
+        organizationId:
+          currentUser.organizationId,
+      },
+      {
+        assignedTo: null as any,
+      },
+    );
+
+    // Log activity
+    await this.activityLogService.log(
+      'customer_unassigned',
+      'customer',
+      customerId,
+      currentUser.organizationId,
+      currentUser.userId,
+      { previouslyAssignedTo: customer.assignedTo },
+    );
+
+    return this.findOne(customerId, currentUser);
   }
 }

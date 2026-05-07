@@ -39,18 +39,21 @@ export class CustomersController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'includeDeleted', required: false, type: Boolean })
   @ApiResponse({ status: 200, description: 'Customers retrieved successfully' })
   findAll(
     @CurrentUser() currentUser: any,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
+    @Query('includeDeleted') includeDeleted?: string,
   ) {
     return this.customersService.findAll(
       currentUser,
       page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 10,
       search,
+      includeDeleted === 'true',
     );
   }
 
@@ -101,5 +104,12 @@ export class CustomersController {
   @ApiResponse({ status: 200, description: 'Customer restored successfully' })
   restore(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.customersService.restore(id, currentUser);
+  }
+
+  @Post(':id/unassign')
+  @ApiOperation({ summary: 'Unassign customer from user' })
+  @ApiResponse({ status: 200, description: 'Customer unassigned successfully' })
+  unassignCustomer(@Param('id') id: string, @CurrentUser() currentUser: any) {
+    return this.customersService.unassignCustomer(id, currentUser);
   }
 }
