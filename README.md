@@ -6,7 +6,7 @@ A production-grade, full-stack multi-tenant CRM system built with **NestJS**, **
 
 **Frontend**: https://multi-tenant-crm-lgqg.vercel.app  
 **Backend API**: https://multi-tenant-crm-sage.vercel.app  
-**API Documentation**: https://petstore.swagger.io/?url=https://multi-tenant-crm-sage.vercel.app/api/docs-json
+**API Documentation**: https://multi-tenant-crm-sage.vercel.app/api/docs
 
 **Test Credentials**:
 - Admin: `admin@acme.com` / `password123`
