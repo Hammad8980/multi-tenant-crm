@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { getDatabaseConfig } from './database/database.config';
+import { AppController } from './app.controller';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -29,5 +30,6 @@ import { ActivityLogModule } from './modules/activity-log/activity-log.module';
     OrganizationsModule,
     ActivityLogModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
