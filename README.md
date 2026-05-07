@@ -1,96 +1,71 @@
 # Multi-Tenant CRM System
 
-A production-grade, full-stack multi-tenant CRM system built with **NestJS**, **PostgreSQL**, **Next.js**, and **TypeScript**. Features complete data isolation, concurrency-safe operations, soft delete with restore, comprehensive activity logging, and a modern React UI.
+A production-grade, full-stack multi-tenant CRM system built with **NestJS**, **PostgreSQL**, **Next.js**, and **TypeScript**. This project demonstrates backend architecture, database design, concurrency handling, performance optimization, and production-level thinking.
 
-> **Assignment Submission**: This project demonstrates backend architecture, database design, concurrency handling, performance optimization, clean TypeScript usage, frontend state management, and production-level thinking.
+## 🌐 Live Demo
 
-## 📋 Table of Contents
+**Frontend**: https://multi-tenant-crm-lgqg.vercel.app  
+**Backend API**: https://multi-tenant-crm-sage.vercel.app  
+**API Documentation**: https://petstore.swagger.io/?url=https://multi-tenant-crm-sage.vercel.app/api/docs-json
 
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Quick Start](#-quick-start)
-- [Architecture Decisions](#-architecture-decisions)
-- [Multi-Tenancy Isolation](#-multi-tenancy-isolation)
-- [Concurrency Safety](#-concurrency-safety)
-- [Performance Strategy](#-performance-strategy)
-- [Soft Delete Integrity](#-soft-delete-integrity)
-- [Production Improvement](#-production-improvement)
-- [Scaling Strategy](#-scaling-strategy)
-- [Trade-offs](#%EF%B8%8F-trade-offs)
-- [Testing](#-testing)
-- [Project Structure](#-project-structure)
-- [API Documentation](#-api-documentation)
+**Test Credentials**:
+- Admin: `admin@acme.com` / `password123`
+- Member: `jane@acme.com` / `password123`
 
-## ✨ Features
-
-### Backend (NestJS + PostgreSQL)
-- ✅ **Multi-Tenancy**: Complete data isolation between organizations
-- ✅ **JWT Authentication**: Role-based access control (admin/member)
-- ✅ **Concurrency Safety**: Pessimistic locking for customer assignment (max 5 per user)
-- ✅ **Soft Delete**: Customers can be deleted and restored with data preservation
-- ✅ **Activity Logging**: Comprehensive audit trail for all operations
-- ✅ **Performance Optimized**: Database indexes for 100K+ customers per organization
-- ✅ **API Documentation**: Interactive Swagger/OpenAPI documentation
-- ✅ **Type Safety**: Strict TypeScript with DTO validation
-
-### Frontend (Next.js + React)
-- ✅ **Modern UI**: Clean, responsive interface with Tailwind CSS + shadcn/ui
-- ✅ **Customer Management**: Full CRUD with pagination and search
-- ✅ **Customer Assignment**: Assign/unassign customers to users
-- ✅ **Notes Management**: Add and view notes per customer
-- ✅ **User Management**: Admin-only user creation and management
-- ✅ **Soft Delete UI**: View and restore deleted customers
-- ✅ **State Management**: React Query + Zustand with localStorage persistence
-- ✅ **Debounced Search**: 500ms debounce for efficient searching
-- ✅ **Loading States**: Proper loading and error handling throughout
+---
 
 ## 🛠 Tech Stack
 
+**Backend**: NestJS, TypeScript, PostgreSQL, TypeORM, JWT, Swagger  
+**Frontend**: Next.js 14, TypeScript, React Query, Zustand, Tailwind CSS, shadcn/ui  
+**Deployment**: Vercel (Frontend + Backend), Supabase (Database)
+
+---
+
+## ✨ Features Implemented
+
 ### Backend
-- **Framework**: NestJS 10.x
-- **Language**: TypeScript (strict mode)
-- **Database**: PostgreSQL 14+
-- **ORM**: TypeORM with migrations
-- **Authentication**: JWT with Passport
-- **Validation**: class-validator, class-transformer
-- **Documentation**: Swagger/OpenAPI
+- ✅ Multi-tenancy with complete data isolation (`organizationId` filtering)
+- ✅ JWT authentication with role-based access control (admin/member)
+- ✅ Concurrency-safe customer assignment (pessimistic locking, max 5 per user)
+- ✅ Soft delete with restore functionality
+- ✅ Comprehensive activity logging for audit trail
+- ✅ Performance-optimized queries with database indexes
+- ✅ Swagger API documentation
+- ✅ Strict TypeScript with DTO validation
 
 ### Frontend
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript (strict mode)
-- **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
-- **State Management**: React Query + Zustand
-- **Forms**: React Hook Form + Zod validation
-- **HTTP Client**: Axios with interceptors
+- ✅ Customer management (CRUD, pagination, search)
+- ✅ Customer assignment with validation
+- ✅ Notes management per customer
+- ✅ User management (admin only)
+- ✅ Soft delete UI with restore
+- ✅ Debounced search (500ms)
+- ✅ Loading states and error handling
+- ✅ React Query caching + Zustand for auth state
 
-## 🚀 Quick Start
+---
+
+## 🚀 Setup Instructions
 
 ### Prerequisites
 - Node.js 18+
 - PostgreSQL 14+
-- npm or yarn
 
 ### Backend Setup
 
 ```bash
-# 1. Navigate to backend
 cd backend
-
-# 2. Install dependencies
 npm install
 
-# 3. Create database
-createdb multi_tenant_crm
-
-# 4. Configure environment
+# Configure environment
 cp .env.example .env
-# Edit .env with your database credentials and JWT secret
+# Edit .env with your database credentials
 
-# 5. Start server (auto-syncs schema)
+# Start server (auto-syncs schema)
 npm run start:dev
 
-# 6. Seed test data
+# Seed test data
 npm run seed
 ```
 
@@ -100,106 +75,73 @@ Swagger docs at **http://localhost:3000/api/docs**
 ### Frontend Setup
 
 ```bash
-# 1. Navigate to frontend
 cd frontend
-
-# 2. Install dependencies
 npm install
 
-# 3. Configure environment
 # Create .env.local with:
 # NEXT_PUBLIC_API_URL=http://localhost:3000
 
-# 4. Start development server
 npm run dev
 ```
 
 Frontend runs on **http://localhost:3001**
 
-### Test Credentials
-
-```
-Organization 1 (Acme Corporation):
-- Admin:  admin@acme.com / password123
-- Member: jane@acme.com / password123
-- Member: bob@acme.com / password123
-
-Organization 2 (TechStart Inc):
-- Admin:  admin@techstart.com / password123
-```
+---
 
 ## 🏗 Architecture Decisions
 
-### 1. Monorepo Structure
-**Decision**: Separate `backend/` and `frontend/` directories in one repository.
-
-**Reasoning**:
-- Clear separation of concerns
-- Independent deployment possible
-- Shared documentation and version control
-- Easy to understand project structure
-
-### 2. NestJS for Backend
-**Decision**: Use NestJS framework over Express.js.
-
-**Reasoning**:
-- Built-in TypeScript support
+### Why NestJS?
+- Built-in TypeScript support with decorators
 - Dependency injection for testability
 - Modular architecture (modules, controllers, services)
-- Excellent documentation and ecosystem
-- Built-in Swagger integration
+- Excellent Swagger integration
+- Enterprise-grade patterns out of the box
 
-### 3. TypeORM for Database
-**Decision**: Use TypeORM as the ORM layer.
+### Why PostgreSQL?
+- ACID compliance for data integrity
+- Advanced features (pessimistic locking, transactions)
+- Excellent performance with proper indexing
+- Strong TypeORM support
+- Industry standard for multi-tenant applications
 
-**Reasoning**:
-- TypeScript-first design
-- Decorator-based entity definitions
-- Built-in migration support
-- Active Record and Data Mapper patterns
-- Excellent NestJS integration
+### Why TypeORM?
+- TypeScript-first design with decorators
+- Automatic schema synchronization (development)
+- Built-in migration support (production)
+- Query builder for complex queries
+- Seamless NestJS integration
 
-### 4. Next.js App Router
-**Decision**: Use Next.js 14 with App Router (not Pages Router).
+### Why Monorepo?
+- Easier to share types between frontend/backend
+- Single version control and deployment
+- Simpler for assignment submission and review
+- Unified documentation
 
-**Reasoning**:
-- Server components for better performance
-- Built-in routing and layouts
-- Excellent TypeScript support
-- Modern React patterns (Server/Client components)
-- Better SEO capabilities
-
-### 5. React Query + Zustand
-**Decision**: Use React Query for server state, Zustand for client state.
-
-**Reasoning**:
-- React Query: Automatic caching, refetching, and synchronization
-- Zustand: Lightweight, simple API, no boilerplate
+### Why React Query + Zustand?
+- **React Query**: Automatic caching, refetching, and server state synchronization
+- **Zustand**: Lightweight client state (auth) with localStorage persistence
 - Clear separation: server data vs UI state
-- Excellent TypeScript support
+- Minimal boilerplate, excellent TypeScript support
+
+---
 
 ## 🔒 Multi-Tenancy Isolation
 
-### How It Works
+### Implementation Strategy
 
-Every entity (except `Organization`) includes an `organizationId` field. All database queries automatically filter by the authenticated user's `organizationId`.
+Every entity (except `Organization`) includes an `organizationId` field. All database queries automatically filter by the authenticated user's organization.
 
-### Implementation
-
-**1. Database Level**
+**Database Level**:
 ```typescript
 @Entity('customers')
 export class Customer {
   @Column({ type: 'uuid' })
+  @Index() // ✅ Indexed for fast filtering
   organizationId: string;
-
-  @ManyToOne(() => Organization)
-  @JoinColumn({ name: 'organizationId' })
-  organization: Organization;
 }
 ```
 
-**2. Service Layer Enforcement**
+**Service Layer Enforcement**:
 ```typescript
 async findAll(currentUser: any) {
   return this.customerRepository.find({
@@ -210,13 +152,13 @@ async findAll(currentUser: any) {
 }
 ```
 
-**3. JWT Strategy**
+**JWT Strategy Injection**:
 ```typescript
 async validate(payload: any) {
   const user = await this.usersService.findOne(payload.sub);
   return {
     userId: user.id,
-    organizationId: user.organizationId, // ✅ Injected into requests
+    organizationId: user.organizationId, // ✅ Injected into all requests
     role: user.role,
   };
 }
@@ -224,34 +166,36 @@ async validate(payload: any) {
 
 ### Security Guarantees
 
-- ✅ **Database Indexes**: `@Index(['organizationId'])` on all multi-tenant tables
-- ✅ **Foreign Keys**: Prevent orphaned records across organizations
-- ✅ **Service Layer**: All queries filter by `organizationId`
-- ✅ **No Cross-Tenant Access**: Impossible to access another org's data
-- ✅ **Tested**: Verified with multiple organizations in seed data
+- ✅ **Database indexes** on all `organizationId` columns
+- ✅ **Foreign keys** prevent orphaned records
+- ✅ **Service layer** enforces filtering on every query
+- ✅ **Impossible to access** another organization's data
+- ✅ **Tested** with multiple organizations in seed data
 
 ### Why This Approach?
 
 **Alternatives Considered**:
-1. **Separate Databases per Tenant**: Too complex for this scale
-2. **Schema per Tenant**: Harder to maintain, query across tenants
-3. **Row-Level Security (RLS)**: PostgreSQL-specific, less portable
+- Separate databases per tenant → Too complex for this scale
+- Schema per tenant → Harder to maintain
+- Row-Level Security (RLS) → PostgreSQL-specific, less portable
 
 **Chosen**: Shared database with `organizationId` filtering
-- ✅ Simple to implement and understand
-- ✅ Easy to query and maintain
-- ✅ Scales to thousands of organizations
-- ✅ Works with any database
+- Simple to implement and understand
+- Easy to query and maintain
+- Scales to thousands of organizations
+- Database-agnostic
+
+---
 
 ## ⚡ Concurrency Safety
 
 ### The Problem
 
-Multiple concurrent requests trying to assign customers to the same user could exceed the 5-customer limit due to race conditions:
+Multiple concurrent requests trying to assign customers to the same user could exceed the 5-customer limit:
 
 ```
 Request A: Check count (4) → Assign → Count becomes 5 ✅
-Request B: Check count (4) → Assign → Count becomes 6 ❌ (race condition!)
+Request B: Check count (4) → Assign → Count becomes 6 ❌ Race condition!
 ```
 
 ### The Solution: Pessimistic Locking
@@ -259,7 +203,7 @@ Request B: Check count (4) → Assign → Count becomes 6 ❌ (race condition!)
 ```typescript
 async assignCustomer(customerId: string, userId: string, currentUser: any) {
   return await this.dataSource.transaction(async (manager) => {
-    // 1. Lock rows during read (prevents other transactions from reading/writing)
+    // 1. Lock rows during read (prevents concurrent access)
     const assignedCustomers = await manager
       .createQueryBuilder(Customer, 'customer')
       .setLock('pessimistic_write')  // 🔒 Database-level lock
@@ -269,7 +213,7 @@ async assignCustomer(customerId: string, userId: string, currentUser: any) {
 
     // 2. Check count after locking
     if (assignedCustomers.length >= 5) {
-      throw new BadRequestException('User already has maximum 5 active customers');
+      throw new BadRequestException('User already has 5 customers');
     }
 
     // 3. Assign customer (still within transaction)
@@ -293,36 +237,23 @@ async assignCustomer(customerId: string, userId: string, currentUser: any) {
 |----------|------|------|---------|
 | **Pessimistic Locking** | Guarantees correctness, simple | Slightly lower throughput | ✅ Yes |
 | **Optimistic Locking** | Higher throughput | Retry logic needed, can fail | ❌ No |
-| **Application-Level Lock** | No database support needed | Doesn't work across instances | ❌ No |
-| **Redis Distributed Lock** | Works across instances | Additional infrastructure | ❌ No |
+| **Application Lock** | No DB support needed | Doesn't work across instances | ❌ No |
+| **Redis Lock** | Works across instances | Additional infrastructure | ❌ No |
 
-**Decision**: Pessimistic locking provides the best balance of correctness and simplicity for this use case.
+**Decision**: Pessimistic locking provides the best balance of correctness and simplicity. For customer assignment, **correctness is more important than throughput**.
 
-### Testing Concurrency
+---
 
-```bash
-# Run 10 concurrent assignment requests
-for i in {1..10}; do
-  curl -X POST http://localhost:3000/customers/{id}/assign \
-    -H "Authorization: Bearer {token}" \
-    -H "Content-Type: application/json" \
-    -d '{"userId": "{userId}"}' &
-done
-wait
-
-# Expected: Only 5 succeed, rest return 400 error
-```
-
-## 🚄 Performance Strategy
+## 🚄 Performance Strategy & Indexing
 
 ### Database Indexes
 
-**Composite Indexes for Multi-Tenant Queries**:
 ```typescript
 // Customer entity
 @Index(['organizationId'])                    // Multi-tenancy queries
 @Index(['assignedTo', 'organizationId'])      // Assignment queries
 @Index(['email'])                             // Search queries
+@Index(['deletedAt'])                         // Soft delete filtering
 @Entity('customers')
 export class Customer { ... }
 
@@ -342,7 +273,6 @@ export class Note { ... }
 
 **1. Pagination**
 ```typescript
-// All list endpoints support pagination
 async findAll(page = 1, limit = 10) {
   return this.customerRepository
     .createQueryBuilder('customer')
@@ -376,25 +306,17 @@ async findAll(page = 1, limit = 10) {
 | Metric | Strategy | Result |
 |--------|----------|--------|
 | **Query Time** | Indexed `organizationId` | O(log n) lookups |
-| **Memory** | Pagination (10 per page) | Constant memory usage |
-| **Soft Delete** | Indexed `deletedAt` column | No table scans |
+| **Memory** | Pagination (10 per page) | Constant memory |
+| **Soft Delete** | Indexed `deletedAt` | No table scans |
 | **Search** | Indexed `email` and `name` | Fast ILIKE queries |
-| **Assignment** | Composite index on `(assignedTo, organizationId)` | Fast count queries |
+| **Assignment** | Composite index | Fast count queries |
 
-### Performance Testing Results
-
-```bash
-# With 100,000 customers in database:
-GET /customers?page=1&limit=10          # ~50ms
-GET /customers?search=john              # ~80ms (ILIKE with index)
-POST /customers/{id}/assign             # ~120ms (with pessimistic lock)
-```
+---
 
 ## 🗑 Soft Delete Integrity
 
 ### Implementation
 
-**Entity Definition**:
 ```typescript
 @Entity('customers')
 export class Customer {
@@ -406,24 +328,9 @@ export class Customer {
 ### Behavior
 
 1. **Delete**: Sets `deletedAt` to current timestamp
-   ```typescript
-   await this.customerRepository.softDelete(id);
-   ```
-
 2. **Normal Queries**: Automatically filter `WHERE deletedAt IS NULL`
-   ```typescript
-   .where('customer.deletedAt IS NULL')
-   ```
-
 3. **Include Deleted**: Use `withDeleted()` to include soft-deleted records
-   ```typescript
-   .withDeleted()
-   ```
-
 4. **Restore**: Sets `deletedAt` back to NULL
-   ```typescript
-   await this.customerRepository.restore(id);
-   ```
 
 ### Data Preservation
 
@@ -435,24 +342,9 @@ When a customer is soft-deleted:
 **Why This Matters**:
 - Accidental deletions can be recovered
 - Audit trail is never lost
-- Business intelligence data preserved
 - Compliance requirements met
 
-### Frontend Integration
-
-```typescript
-// Show deleted customers with toggle
-const [showDeleted, setShowDeleted] = useState(false);
-
-const { data } = useCustomers({
-  includeDeleted: showDeleted,  // Backend parameter
-});
-
-// Restore button for deleted customers
-<Button onClick={() => restoreMutation.mutate(customer.id)}>
-  <RotateCcw /> Restore
-</Button>
-```
+---
 
 ## 🎯 Production Improvement
 
@@ -464,8 +356,7 @@ const { data } = useCustomers({
 2. **Self-Documenting**: Auto-generated from code decorators
 3. **Always Up-to-Date**: Documentation can't drift from implementation
 4. **Type Safety**: Request/response schemas validated
-5. **Client Generation**: Can generate TypeScript/JavaScript clients
-6. **Onboarding**: New developers can explore API instantly
+5. **Onboarding**: New developers can explore API instantly
 
 ### Implementation
 
@@ -473,15 +364,11 @@ const { data } = useCustomers({
 // main.ts
 const config = new DocumentBuilder()
   .setTitle('Multi-Tenant CRM API')
-  .setDescription('Production-grade CRM system with multi-tenancy')
+  .setDescription('Production-grade CRM system')
   .setVersion('1.0')
-  .addBearerAuth(
-    { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-    'JWT-auth',
-  )
+  .addBearerAuth()
   .build();
 
-const document = SwaggerModule.createDocument(app, config);
 SwaggerModule.setup('api/docs', app, document);
 ```
 
@@ -490,110 +377,36 @@ SwaggerModule.setup('api/docs', app, document);
 @ApiTags('customers')
 @ApiBearerAuth('JWT-auth')
 @ApiOperation({ summary: 'Create a new customer' })
-@ApiResponse({ status: 201, description: 'Customer created successfully' })
+@ApiResponse({ status: 201, description: 'Customer created' })
 @Post()
-create(@Body() createCustomerDto: CreateCustomerDto) { ... }
+create(@Body() dto: CreateCustomerDto) { ... }
 ```
 
-### Features
+**Access**: http://localhost:3000/api/docs
 
-- ✅ Interactive "Try it out" functionality
-- ✅ JWT authentication support
-- ✅ Request/response examples
-- ✅ Schema validation
-- ✅ Organized by tags (auth, customers, users, etc.)
-- ✅ Export as OpenAPI JSON/YAML
-
-### Access
-
-Visit **http://localhost:3000/api/docs** after starting the backend.
-
-### Alternative Improvements Considered
-
-| Improvement | Pros | Cons | Chosen? |
-|-------------|------|------|---------|
-| **Swagger Docs** | Great DX, self-documenting | Adds decorators to code | ✅ Yes |
-| **Rate Limiting** | Prevents abuse | Needs Redis for distributed | ❌ No |
-| **Caching** | Faster responses | Cache invalidation complexity | ❌ No |
-| **Background Jobs** | Async processing | Needs queue infrastructure | ❌ No |
-| **Logging Middleware** | Better debugging | Log storage needed | ❌ No |
+---
 
 ## 📈 Scaling Strategy
 
+### Current Architecture Supports
+
+- ✅ **Stateless API** (JWT tokens, no sessions)
+- ✅ **Database connection pooling**
+- ✅ **Multiple instances** behind load balancer
+- ✅ **No in-memory state**
+
 ### Horizontal Scaling
 
-**Current Architecture Supports**:
-- ✅ Stateless API (JWT tokens, no sessions)
-- ✅ Database connection pooling
-- ✅ Can run multiple instances behind load balancer
-- ✅ No in-memory state (except React Query cache on frontend)
-
-**Deployment Strategy**:
 ```
-                    ┌─────────────┐
-                    │ Load Balancer│
-                    └──────┬───────┘
-                           │
-          ┌────────────────┼────────────────┐
-          │                │                │
-    ┌─────▼─────┐    ┌─────▼─────┐    ┌─────▼─────┐
-    │  API       │    │  API       │    │  API       │
-    │  Instance 1│    │  Instance 2│    │  Instance 3│
-    └─────┬─────┘    └─────┬─────┘    └─────┬─────┘
-          │                │                │
-          └────────────────┼────────────────┘
-                           │
-                    ┌──────▼───────┐
-                    │  PostgreSQL   │
-                    │  (Primary)    │
-                    └──────┬───────┘
-                           │
-                    ┌──────▼───────┐
-                    │  PostgreSQL   │
-                    │  (Read Replica)│
-                    └──────────────┘
+Load Balancer
+    │
+    ├─ API Instance 1
+    ├─ API Instance 2
+    └─ API Instance 3
+         │
+    PostgreSQL
+    (Primary + Read Replicas)
 ```
-
-### Database Scaling
-
-**Phase 1: Vertical Scaling** (Current)
-- Increase CPU/RAM on database server
-- Optimize queries and indexes
-- Connection pooling
-
-**Phase 2: Read Replicas**
-- Route read queries to replicas
-- Write queries to primary
-- Reduces load on primary database
-
-**Phase 3: Partitioning**
-```sql
--- Partition by organizationId for large datasets
-CREATE TABLE customers_partition_1 PARTITION OF customers
-  FOR VALUES IN ('org-1-uuid', 'org-2-uuid', ...);
-```
-
-**Phase 4: Sharding**
-- Shard by `organizationId` (natural boundary)
-- Each shard handles subset of organizations
-- Application-level routing
-
-### Caching Strategy
-
-**Phase 1: Application-Level** (Current)
-- React Query caches API responses (5 minutes)
-- Reduces unnecessary API calls
-
-**Phase 2: Redis Caching**
-```typescript
-// Cache frequently accessed data
-@Cacheable('customers', { ttl: 300 })
-async findAll(organizationId: string) { ... }
-```
-
-**Phase 3: CDN**
-- Cache static assets (frontend)
-- Edge caching for API responses
 
 ### Future Optimizations
 
@@ -602,16 +415,9 @@ async findAll(organizationId: string) { ... }
 | **Read Replicas** | >10K requests/min | 50% load reduction |
 | **Redis Cache** | >100K customers | 80% faster reads |
 | **Database Partitioning** | >1M customers | Maintain query speed |
-| **Background Jobs** | Heavy processing | Better UX |
 | **CDN** | Global users | Lower latency |
 
-### Monitoring & Observability
-
-**Recommended Tools**:
-- **APM**: New Relic, Datadog
-- **Logging**: ELK Stack (Elasticsearch, Logstash, Kibana)
-- **Metrics**: Prometheus + Grafana
-- **Tracing**: Jaeger, Zipkin
+---
 
 ## ⚖️ Trade-offs
 
@@ -620,9 +426,9 @@ async findAll(organizationId: string) { ... }
 **Chose**: Pessimistic locking
 
 **Trade-off**:
-- ✅ **Pro**: Guarantees correctness, no retry logic needed
-- ❌ **Con**: Slightly lower throughput under high concurrency
-- **Reasoning**: For customer assignment, correctness is more important than throughput
+- ✅ **Pro**: Guarantees correctness, no retry logic
+- ❌ **Con**: Slightly lower throughput
+- **Reasoning**: For customer assignment, correctness > throughput
 
 ### 2. Soft Delete vs Hard Delete
 
@@ -631,7 +437,7 @@ async findAll(organizationId: string) { ... }
 **Trade-off**:
 - ✅ **Pro**: Data recovery, audit trail preservation
 - ❌ **Con**: More complex queries (must filter `deletedAt`)
-- **Reasoning**: Business requirement to restore customers and preserve history
+- **Reasoning**: Business requirement to restore customers
 
 ### 3. TypeORM Auto-Sync vs Migrations
 
@@ -640,16 +446,16 @@ async findAll(organizationId: string) { ... }
 **Trade-off**:
 - ✅ **Pro**: Faster development iteration
 - ❌ **Con**: Not safe for production
-- **Reasoning**: Acceptable for take-home assignment, would use migrations in production
+- **Reasoning**: Acceptable for assignment, would use migrations in production
 
 ### 4. Monorepo vs Separate Repos
 
-**Chose**: Monorepo (backend + frontend in one repo)
+**Chose**: Monorepo
 
 **Trade-off**:
 - ✅ **Pro**: Easier to share types, single version control
-- ❌ **Con**: Larger repository, shared CI/CD
-- **Reasoning**: Simpler for assignment submission and review
+- ❌ **Con**: Larger repository
+- **Reasoning**: Simpler for assignment submission
 
 ### 5. JWT in Headers vs Cookies
 
@@ -657,76 +463,112 @@ async findAll(organizationId: string) { ... }
 
 **Trade-off**:
 - ✅ **Pro**: Standard for APIs, works with Swagger, mobile-friendly
-- ❌ **Con**: Frontend must handle token storage (XSS risk)
-- **Reasoning**: API-first design, better for SPA and mobile apps
+- ❌ **Con**: Frontend must handle token storage
+- **Reasoning**: API-first design, better for SPA
 
 ### 6. React Query vs Redux
 
 **Chose**: React Query for server state
 
 **Trade-off**:
-- ✅ **Pro**: Less boilerplate, automatic caching/refetching
+- ✅ **Pro**: Less boilerplate, automatic caching
 - ❌ **Con**: Less control over state updates
-- **Reasoning**: Server state is the primary concern, React Query excels at this
+- **Reasoning**: Server state is primary concern
 
-### 7. Zustand vs Context API
+### 7. Deployment: Serverless vs Traditional
 
-**Chose**: Zustand for client state (auth)
+**Chose**: Vercel Serverless
 
 **Trade-off**:
-- ✅ **Pro**: Simple API, no provider hell, great TypeScript support
-- ❌ **Con**: Another dependency
-- **Reasoning**: Cleaner than Context API, lighter than Redux
+- ✅ **Pro**: Free, auto-scaling, no server management
+- ❌ **Con**: Cold starts, 10s timeout
+- **Reasoning**: Perfect for assignment demo, would use dedicated servers for production
 
-## 🧪 Testing
+---
 
-### Backend Testing
+## 🚢 Deployment
 
-**Swagger UI** (Recommended):
-1. Open http://localhost:3000/api/docs
-2. Click "Authorize" → Login with test credentials
-3. Test all endpoints interactively
+### Architecture
 
-**Postman**:
-1. Import `backend/postman_collection.json`
-2. Send "Login" request (auto-saves token)
-3. Test other endpoints
+**Frontend**: Vercel (Next.js optimized, global CDN, auto-deploy)  
+**Backend**: Vercel Serverless (free tier, GitHub integration)  
+**Database**: Supabase (free PostgreSQL, connection pooler for IPv6)
 
-**cURL**:
-```bash
-# Login
-curl -X POST http://localhost:3000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@acme.com","password":"password123"}'
+### Why These Platforms?
 
-# Get customers (use token from login)
-curl http://localhost:3000/customers \
-  -H "Authorization: Bearer YOUR_TOKEN"
+**Supabase**:
+- ✅ Free 500MB PostgreSQL database
+- ✅ Connection pooler (IPv6 compatibility)
+- ✅ No credit card required
+- ❌ Alternatives: Railway (trial expired), Render (paid), Heroku (no free tier)
+
+**Vercel**:
+- ✅ Free unlimited deployments
+- ✅ Auto-deploy on GitHub push
+- ✅ Best for Next.js (built by same team)
+- ❌ Alternatives: Koyeb (now paid), Fly.io (complex setup)
+
+### Environment Variables
+
+**Backend**:
+```env
+DATABASE_URL=postgresql://...
+JWT_SECRET=...
+CORS_ORIGINS=https://frontend-url.vercel.app
 ```
 
-### Frontend Testing
+**Frontend**:
+```env
+NEXT_PUBLIC_API_URL=https://backend-url.vercel.app
+```
 
-1. **Login**: Visit http://localhost:3001
-2. **Test Credentials**: Use `admin@acme.com` / `password123`
-3. **Customer Management**:
-   - Create new customer
-   - Edit customer details
-   - Assign to user (max 5)
-   - Add notes
-   - Soft delete and restore
-4. **User Management** (Admin only):
-   - Create new user
-   - Edit user role
-   - Delete user
+### Limitations (Free Tier)
 
-### Test Scenarios
+- ⚠️ Cold starts (first request ~2-3s)
+- ⚠️ 10s function timeout
+- ⚠️ 500MB database limit
+- ✅ Acceptable for assignment demo
 
-See `backend/TESTING_GUIDE.md` for comprehensive testing scenarios including:
-- Multi-tenancy isolation
-- Concurrency safety
-- Soft delete integrity
-- Role-based access control
-- Performance testing
+---
+
+## 📚 API Endpoints
+
+### Authentication
+- `POST /auth/register` - Register new user
+- `POST /auth/login` - Login and get JWT token
+
+### Organizations
+- `GET /organizations` - List all organizations
+- `POST /organizations` - Create organization
+- `PATCH /organizations/:id` - Update organization
+- `DELETE /organizations/:id` - Delete organization
+
+### Users (Protected)
+- `GET /users` - List users in organization
+- `POST /users` - Create user (admin only)
+- `PATCH /users/:id` - Update user (admin only)
+- `DELETE /users/:id` - Delete user (admin only)
+
+### Customers (Protected)
+- `GET /customers` - List customers (paginated, searchable)
+- `POST /customers` - Create customer
+- `PATCH /customers/:id` - Update customer
+- `DELETE /customers/:id` - Soft delete customer
+- `POST /customers/:id/assign` - Assign to user (max 5)
+- `POST /customers/:id/unassign` - Unassign from user
+- `POST /customers/:id/restore` - Restore soft-deleted customer
+
+### Notes (Protected)
+- `GET /notes/customer/:customerId` - Get notes for customer
+- `POST /notes` - Create note
+- `PATCH /notes/:id` - Update note
+- `DELETE /notes/:id` - Delete note
+
+### Activity Logs (Protected)
+- `GET /activity-logs` - List all logs (paginated)
+- `GET /activity-logs/:entityType/:entityId` - Get logs for entity
+
+---
 
 ## 📁 Project Structure
 
@@ -742,79 +584,34 @@ multi-tenant-crm/
 │   │   │   ├── notes/            # Note management
 │   │   │   └── activity-log/     # Audit logging
 │   │   ├── database/
-│   │   │   ├── database.config.ts
 │   │   │   └── seeds/seed.ts     # Test data
+│   │   ├── common/
+│   │   │   └── constants.ts      # Shared constants
 │   │   └── main.ts               # Swagger setup
-│   ├── README.md                  # Backend documentation
-│   ├── QUICKSTART.md             # 5-minute setup
-│   ├── TESTING_GUIDE.md          # Testing scenarios
-│   └── postman_collection.json   # Postman tests
+│   └── api/
+│       └── index.ts              # Vercel serverless adapter
 │
 ├── frontend/
 │   ├── app/
 │   │   ├── dashboard/            # Protected routes
 │   │   │   ├── page.tsx          # Customer list
-│   │   │   ├── users/            # User management
-│   │   │   └── layout.tsx        # Dashboard layout
-│   │   ├── login/                # Login page
-│   │   ├── page.tsx              # Landing page
-│   │   └── layout.tsx            # Root layout
+│   │   │   └── users/            # User management
+│   │   └── login/                # Login page
 │   ├── components/
 │   │   ├── customers/            # Customer dialogs
-│   │   ├── users/                # User dialogs
 │   │   └── ui/                   # shadcn/ui components
 │   ├── lib/
 │   │   ├── api/                  # API client functions
-│   │   └── providers/            # React Query provider
+│   │   └── constants.ts          # Shared constants
 │   ├── hooks/                    # Custom React hooks
-│   ├── store/                    # Zustand stores
-│   └── types/                    # TypeScript types
+│   └── store/                    # Zustand stores
 │
 └── README.md                      # This file
 ```
 
-## 📚 API Documentation
+---
 
-### Authentication
-- `POST /auth/register` - Register new user
-- `POST /auth/login` - Login and get JWT token
-
-### Organizations
-- `GET /organizations` - List all organizations
-- `POST /organizations` - Create organization
-- `GET /organizations/:id` - Get organization
-- `PATCH /organizations/:id` - Update organization
-- `DELETE /organizations/:id` - Delete organization
-
-### Users (Protected)
-- `GET /users` - List users in organization
-- `POST /users` - Create user (admin only)
-- `GET /users/:id` - Get user
-- `PATCH /users/:id` - Update user (admin only)
-- `DELETE /users/:id` - Delete user (admin only)
-
-### Customers (Protected)
-- `GET /customers` - List customers (paginated, searchable)
-- `POST /customers` - Create customer
-- `GET /customers/:id` - Get customer
-- `PATCH /customers/:id` - Update customer
-- `DELETE /customers/:id` - Soft delete customer
-- `POST /customers/:id/assign` - Assign to user (max 5)
-- `POST /customers/:id/unassign` - Unassign from user
-- `POST /customers/:id/restore` - Restore soft-deleted customer
-
-### Notes (Protected)
-- `GET /notes/customer/:customerId` - Get notes for customer
-- `POST /notes` - Create note
-- `GET /notes/:id` - Get note
-- `PATCH /notes/:id` - Update note
-- `DELETE /notes/:id` - Delete note
-
-### Activity Logs (Protected)
-- `GET /activity-logs` - List all logs (paginated)
-- `GET /activity-logs/:entityType/:entityId` - Get logs for entity
-
-## 📊 Assignment Requirements Checklist
+## ✅ Assignment Requirements Checklist
 
 ### Functional Requirements
 - ✅ Organizations with complete data isolation
@@ -840,7 +637,7 @@ multi-tenant-crm/
 - ✅ **Bonus**: Reusable components (shadcn/ui)
 
 ### Technical Requirements - Backend
-- ✅ Strict TypeScript (no `any`)
+- ✅ Strict TypeScript (no `any` except for `currentUser` decorator)
 - ✅ DTO validation (class-validator)
 - ✅ Clean folder structure (modules)
 - ✅ Controller/Service separation
@@ -863,21 +660,6 @@ multi-tenant-crm/
 - ✅ Production improvement explanation
 - ✅ Setup instructions
 - ✅ Seed data
-
-## 🤝 Contributing
-
-This is a take-home assignment project. For production use, consider:
-- Adding comprehensive unit tests
-- Implementing database migrations
-- Adding rate limiting
-- Setting up CI/CD pipeline
-- Adding monitoring and logging
-- Implementing caching layer
-- Adding E2E tests
-
-## 📄 License
-
-MIT
 
 ---
 
