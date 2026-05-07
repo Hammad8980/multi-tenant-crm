@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { getDatabaseConfig } from './database/database.config';
 
+import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { NotesModule } from './modules/notes/notes.module';
@@ -21,6 +22,7 @@ import { ActivityLogModule } from './modules/activity-log/activity-log.module';
       useFactory: getDatabaseConfig,
     }),
 
+    AuthModule,
     UsersModule,
     CustomersModule,
     NotesModule,

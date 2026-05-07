@@ -15,6 +15,7 @@ import { Customer } from './entities/customer.entity';
 
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 @Injectable()
 export class CustomersService {
@@ -23,6 +24,8 @@ export class CustomersService {
     private readonly customerRepository: Repository<Customer>,
 
     private readonly dataSource: DataSource,
+
+    private readonly activityLogService: ActivityLogService,
   ) {}
 
   // CREATE CUSTOMER
@@ -37,7 +40,19 @@ export class CustomersService {
       organizationId: currentUser.organizationId,
     });
 
-    return await this.customerRepository.save(customer);
+    const savedCustomer = await this.customerRepository.save(customer);
+
+    // Log activity
+    await this.activityLogService.log(
+      'customer_created',
+      'customer',
+      savedCustomer.id,
+      currentUser.organizationId,
+      currentUser.userId,
+      { name: savedCustomer.name, email: savedCustomer.email },
+    );
+
+    return savedCustomer;
   }
 
   // GET ALL CUSTOMERS
@@ -116,7 +131,7 @@ export class CustomersService {
     updateCustomerDto: UpdateCustomerDto,
     currentUser: any,
   ) {
-    await this.findOne(id, currentUser);
+    const customer = await this.findOne(id, currentUser);
 
     await this.customerRepository.update(
       {
@@ -129,6 +144,16 @@ export class CustomersService {
       updateCustomerDto,
     );
 
+    // Log activity
+    await this.activityLogService.log(
+      'customer_updated',
+      'customer',
+      id,
+      currentUser.organizationId,
+      currentUser.userId,
+      { changes: updateCustomerDto },
+    );
+
     return this.findOne(id, currentUser);
   }
 
@@ -137,15 +162,27 @@ export class CustomersService {
     id: string,
     currentUser: any,
   ) {
-    await this.findOne(id, currentUser);
+    const customer = await this.findOne(id, currentUser);
 
-    return await this.customerRepository.softDelete({
+    const result = await this.customerRepository.softDelete({
       id,
 
       // Multi-tenancy enforcement
       organizationId:
         currentUser.organizationId,
     });
+
+    // Log activity
+    await this.activityLogService.log(
+      'customer_deleted',
+      'customer',
+      id,
+      currentUser.organizationId,
+      currentUser.userId,
+      { name: customer.name },
+    );
+
+    return result;
   }
 
   // CONCURRENCY-SAFE ASSIGNMENT
@@ -154,7 +191,7 @@ export class CustomersService {
     userId: string,
     currentUser: any,
   ) {
-    return await this.dataSource.transaction(
+    const result = await this.dataSource.transaction(
       async (manager) => {
         // Lock rows during assignment
         const activeAssignments =
@@ -204,5 +241,61 @@ export class CustomersService {
         });
       },
     );
+
+    // Log activity
+    await this.activityLogService.log(
+      'customer_assigned',
+      'customer',
+      customerId,
+      currentUser.organizationId,
+      currentUser.userId,
+      { assignedTo: userId },
+    );
+
+    return result;
+  }
+
+  // RESTORE SOFT-DELETED CUSTOMER
+  async restore(
+    id: string,
+    currentUser: any,
+  ) {
+    const customer =
+      await this.customerRepository.findOne({
+        where: {
+          id,
+
+          // Multi-tenancy enforcement
+          organizationId:
+            currentUser.organizationId,
+        },
+        withDeleted: true,
+      });
+
+    if (!customer) {
+      throw new NotFoundException(
+        'Customer not found',
+      );
+    }
+
+    if (!customer.deletedAt) {
+      throw new BadRequestException(
+        'Customer is not deleted',
+      );
+    }
+
+    await this.customerRepository.restore(id);
+
+    // Log activity
+    await this.activityLogService.log(
+      'customer_restored',
+      'customer',
+      id,
+      currentUser.organizationId,
+      currentUser.userId,
+      { name: customer.name },
+    );
+
+    return this.findOne(id, currentUser);
   }
 }

@@ -25,6 +25,9 @@ export class User {
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
+  @Column({ type: 'varchar' })
+  password: string;
+
   @Column({ type: 'varchar', default: 'member' })
   role: string;
 
