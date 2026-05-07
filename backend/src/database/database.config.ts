@@ -3,15 +3,33 @@ import { ConfigService } from '@nestjs/config';
 
 export const getDatabaseConfig = (
   configService: ConfigService,
-): TypeOrmModuleOptions => ({
-  type: 'postgres',
-  host: configService.get<string>('DB_HOST'),
-  port: configService.get<number>('DB_PORT'),
-  username: configService.get<string>('DB_USERNAME'),
-  password: configService.get<string>('DB_PASSWORD'),
-  database: configService.get<string>('DB_NAME'),
+): TypeOrmModuleOptions => {
+  // Use connection string if available, otherwise use individual credentials
+  const databaseUrl = configService.get<string>('DATABASE_URL');
 
-  entities: [__dirname + '/../modules/**/*.entity{.ts,.js}'],
+  if (databaseUrl) {
+    return {
+      type: 'postgres',
+      url: databaseUrl,
+      entities: [__dirname + '/../modules/**/*.entity{.ts,.js}'],
+      synchronize: true,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    };
+  }
 
-  synchronize: true,
-});
+  return {
+    type: 'postgres',
+    host: configService.get<string>('DB_HOST'),
+    port: configService.get<number>('DB_PORT'),
+    username: configService.get<string>('DB_USERNAME'),
+    password: configService.get<string>('DB_PASSWORD'),
+    database: configService.get<string>('DB_NAME'),
+    entities: [__dirname + '/../modules/**/*.entity{.ts,.js}'],
+    synchronize: true,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  };
+};

@@ -11,16 +11,30 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 async function seed() {
-  const dataSource = new DataSource({
-    type: 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432'),
-    username: process.env.DB_USERNAME || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
-    database: process.env.DB_NAME || 'multi_tenant_crm',
-    entities: [Organization, User, Customer, Note],
-    synchronize: false,
-  });
+  // Use connection string if available, otherwise use individual credentials
+  const databaseUrl = process.env.DATABASE_URL;
+
+  const dataSource = databaseUrl
+    ? new DataSource({
+        type: 'postgres',
+        url: databaseUrl,
+        entities: [Organization, User, Customer, Note],
+        synchronize: true,
+        ssl: { rejectUnauthorized: false },
+      })
+    : new DataSource({
+        type: 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432'),
+        username: process.env.DB_USERNAME || 'postgres',
+        password: process.env.DB_PASSWORD || 'postgres',
+        database: process.env.DB_NAME || 'multi_tenant_crm',
+        entities: [Organization, User, Customer, Note],
+        synchronize: true,
+        ssl: process.env.DB_HOST?.includes('supabase.co')
+          ? { rejectUnauthorized: false }
+          : false,
+      });
 
   await dataSource.initialize();
 

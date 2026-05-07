@@ -16,7 +16,16 @@ async function bootstrap() {
   );
 
   // Enable CORS
-  app.enableCors();
+  const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [];
+  
+  if (allowedOrigins.length === 0) {
+    throw new Error('CORS_ORIGINS environment variable is required');
+  }
+  
+  app.enableCors({
+    origin: allowedOrigins,
+    credentials: true,
+  });
 
   // Swagger API Documentation
   const config = new DocumentBuilder()
