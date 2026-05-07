@@ -40,8 +40,9 @@ export default function LoginPage() {
       setAuth(response.user, response.accessToken);
       toast.success('Login successful!');
       router.push('/dashboard');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Login failed');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }

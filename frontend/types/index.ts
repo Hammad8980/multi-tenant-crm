@@ -45,7 +45,7 @@ export interface ActivityLog {
   entityId: string;
   organizationId: string;
   userId: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: string;
 }
 

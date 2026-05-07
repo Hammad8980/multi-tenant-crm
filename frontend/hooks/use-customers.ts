@@ -32,8 +32,9 @@ export function useCreateCustomer() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       toast.success('Customer created successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to create customer');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to create customer');
     },
   });
 }
@@ -48,8 +49,9 @@ export function useUpdateCustomer() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       toast.success('Customer updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update customer');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to update customer');
     },
   });
 }
@@ -63,8 +65,9 @@ export function useDeleteCustomer() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       toast.success('Customer deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete customer');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to delete customer');
     },
   });
 }
@@ -78,8 +81,9 @@ export function useRestoreCustomer() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       toast.success('Customer restored successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to restore customer');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to restore customer');
     },
   });
 }
@@ -94,9 +98,10 @@ export function useAssignCustomer() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       toast.success('Customer assigned successfully');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
       toast.error(
-        error.response?.data?.message || 'Failed to assign customer'
+        err.response?.data?.message || 'Failed to assign customer'
       );
     },
   });
@@ -111,9 +116,10 @@ export function useUnassignCustomer() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       toast.success('Customer unassigned successfully');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
       toast.error(
-        error.response?.data?.message || 'Failed to unassign customer'
+        err.response?.data?.message || 'Failed to unassign customer'
       );
     },
   });

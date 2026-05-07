@@ -68,7 +68,7 @@ export function EditUserDialog({ open, onOpenChange, user }: EditUserDialogProps
   }, [user, reset]);
 
   const onSubmit = async (data: UserForm) => {
-    const payload: any = {
+    const payload: { name: string; role: string; password?: string } = {
       name: data.name,
       role: data.role,
     };

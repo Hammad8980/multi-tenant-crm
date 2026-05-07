@@ -6,16 +6,17 @@ import {
 
 import { InjectRepository } from '@nestjs/typeorm';
 
-import {
-  Repository,
-  DataSource,
-} from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 
 import { Customer } from './entities/customer.entity';
 
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { ActivityLogService } from '../activity-log/activity-log.service';
+import {
+  DEFAULT_PAGE_SIZE,
+  MAX_CUSTOMERS_PER_USER,
+} from '../../common/constants';
 
 @Injectable()
 export class CustomersService {
@@ -29,10 +30,7 @@ export class CustomersService {
   ) {}
 
   // CREATE CUSTOMER
-  async create(
-    createCustomerDto: CreateCustomerDto,
-    currentUser: any,
-  ) {
+  async create(createCustomerDto: CreateCustomerDto, currentUser: any) {
     const customer = this.customerRepository.create({
       ...createCustomerDto,
 
@@ -59,7 +57,7 @@ export class CustomersService {
   async findAll(
     currentUser: any,
     page = 1,
-    limit = 10,
+    limit = DEFAULT_PAGE_SIZE,
     search?: string,
     includeDeleted = false,
   ) {
@@ -70,12 +68,9 @@ export class CustomersService {
       .leftJoinAndSelect('customer.assignedToUser', 'assignedToUser')
 
       // Multi-tenancy enforcement
-      .where(
-        'customer.organizationId = :organizationId',
-        {
-          organizationId: currentUser.organizationId,
-        },
-      );
+      .where('customer.organizationId = :organizationId', {
+        organizationId: currentUser.organizationId,
+      });
 
     // Soft delete filtering (optional)
     if (!includeDeleted) {
@@ -100,8 +95,7 @@ export class CustomersService {
       query.withDeleted();
     }
 
-    const [customers, total] =
-      await query.getManyAndCount();
+    const [customers, total] = await query.getManyAndCount();
 
     return {
       data: customers,
@@ -112,25 +106,18 @@ export class CustomersService {
   }
 
   // GET SINGLE CUSTOMER
-  async findOne(
-    id: string,
-    currentUser: any,
-  ) {
-    const customer =
-      await this.customerRepository.findOne({
-        where: {
-          id,
+  async findOne(id: string, currentUser: any) {
+    const customer = await this.customerRepository.findOne({
+      where: {
+        id,
 
-          // Multi-tenancy enforcement
-          organizationId:
-            currentUser.organizationId,
-        },
-      });
+        // Multi-tenancy enforcement
+        organizationId: currentUser.organizationId,
+      },
+    });
 
     if (!customer) {
-      throw new NotFoundException(
-        'Customer not found',
-      );
+      throw new NotFoundException('Customer not found');
     }
 
     return customer;
@@ -142,15 +129,14 @@ export class CustomersService {
     updateCustomerDto: UpdateCustomerDto,
     currentUser: any,
   ) {
-    const customer = await this.findOne(id, currentUser);
+    await this.findOne(id, currentUser);
 
     await this.customerRepository.update(
       {
         id,
 
         // Multi-tenancy enforcement
-        organizationId:
-          currentUser.organizationId,
+        organizationId: currentUser.organizationId,
       },
       updateCustomerDto,
     );
@@ -169,18 +155,14 @@ export class CustomersService {
   }
 
   // SOFT DELETE CUSTOMER
-  async remove(
-    id: string,
-    currentUser: any,
-  ) {
+  async remove(id: string, currentUser: any) {
     const customer = await this.findOne(id, currentUser);
 
-    const result = await this.customerRepository.softDelete({
+    await this.customerRepository.softDelete({
       id,
 
       // Multi-tenancy enforcement
-      organizationId:
-        currentUser.organizationId,
+      organizationId: currentUser.organizationId,
     });
 
     // Log activity
@@ -192,55 +174,46 @@ export class CustomersService {
       currentUser.userId,
       { name: customer.name },
     );
-
-    return result;
   }
 
   // CONCURRENCY-SAFE ASSIGNMENT
-  async assignCustomer(
-    customerId: string,
-    userId: string,
-    currentUser: any,
-  ) {
-    const result = await this.dataSource.transaction(
-      async (manager) => {
-        // Lock and get all assigned customers for this user
-        const assignedCustomers = await manager
-          .createQueryBuilder(Customer, 'customer')
-          .setLock('pessimistic_write')
-          .where('customer.assignedTo = :userId', { userId })
-          .andWhere('customer.deletedAt IS NULL')
-          .getMany();
+  async assignCustomer(customerId: string, userId: string, currentUser: any) {
+    const result = await this.dataSource.transaction(async (manager) => {
+      // Lock and get all assigned customers for this user
+      const assignedCustomers = await manager
+        .createQueryBuilder(Customer, 'customer')
+        .setLock('pessimistic_write')
+        .where('customer.assignedTo = :userId', { userId })
+        .andWhere('customer.deletedAt IS NULL')
+        .getMany();
 
-        // Check count after locking
-        if (assignedCustomers.length >= 5) {
-          throw new BadRequestException(
-            'User already has maximum 5 active customers',
-          );
-        }
-
-        // Assign customer
-        await manager.update(
-          Customer,
-          {
-            id: customerId,
-
-            // Multi-tenancy enforcement
-            organizationId:
-              currentUser.organizationId,
-          },
-          {
-            assignedTo: userId,
-          },
+      // Check count after locking
+      if (assignedCustomers.length >= MAX_CUSTOMERS_PER_USER) {
+        throw new BadRequestException(
+          `User already has maximum ${MAX_CUSTOMERS_PER_USER} active customers`,
         );
+      }
 
-        return await manager.findOne(Customer, {
-          where: {
-            id: customerId,
-          },
-        });
-      },
-    );
+      // Assign customer
+      await manager.update(
+        Customer,
+        {
+          id: customerId,
+
+          // Multi-tenancy enforcement
+          organizationId: currentUser.organizationId,
+        },
+        {
+          assignedTo: userId,
+        },
+      );
+
+      return await manager.findOne(Customer, {
+        where: {
+          id: customerId,
+        },
+      });
+    });
 
     // Log activity
     await this.activityLogService.log(
@@ -256,32 +229,23 @@ export class CustomersService {
   }
 
   // RESTORE SOFT-DELETED CUSTOMER
-  async restore(
-    id: string,
-    currentUser: any,
-  ) {
-    const customer =
-      await this.customerRepository.findOne({
-        where: {
-          id,
+  async restore(id: string, currentUser: any) {
+    const customer = await this.customerRepository.findOne({
+      where: {
+        id,
 
-          // Multi-tenancy enforcement
-          organizationId:
-            currentUser.organizationId,
-        },
-        withDeleted: true,
-      });
+        // Multi-tenancy enforcement
+        organizationId: currentUser.organizationId,
+      },
+      withDeleted: true,
+    });
 
     if (!customer) {
-      throw new NotFoundException(
-        'Customer not found',
-      );
+      throw new NotFoundException('Customer not found');
     }
 
     if (!customer.deletedAt) {
-      throw new BadRequestException(
-        'Customer is not deleted',
-      );
+      throw new BadRequestException('Customer is not deleted');
     }
 
     await this.customerRepository.restore(id);
@@ -300,16 +264,11 @@ export class CustomersService {
   }
 
   // UNASSIGN CUSTOMER
-  async unassignCustomer(
-    customerId: string,
-    currentUser: any,
-  ) {
+  async unassignCustomer(customerId: string, currentUser: any) {
     const customer = await this.findOne(customerId, currentUser);
 
     if (!customer.assignedTo) {
-      throw new BadRequestException(
-        'Customer is not assigned to anyone',
-      );
+      throw new BadRequestException('Customer is not assigned to anyone');
     }
 
     await this.customerRepository.update(
@@ -317,8 +276,7 @@ export class CustomersService {
         id: customerId,
 
         // Multi-tenancy enforcement
-        organizationId:
-          currentUser.organizationId,
+        organizationId: currentUser.organizationId,
       },
       {
         assignedTo: null as any,

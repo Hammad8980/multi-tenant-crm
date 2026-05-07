@@ -9,7 +9,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
@@ -78,7 +84,10 @@ export class CustomersController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Soft delete a customer' })
-  @ApiResponse({ status: 200, description: 'Customer soft deleted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Customer soft deleted successfully',
+  })
   remove(@Param('id') id: string, @CurrentUser() currentUser: any) {
     return this.customersService.remove(id, currentUser);
   }

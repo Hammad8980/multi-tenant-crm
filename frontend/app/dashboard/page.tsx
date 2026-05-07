@@ -26,6 +26,7 @@ import { AssignCustomerDialog } from '@/components/customers/assign-customer-dia
 import { CustomerNotesDialog } from '@/components/customers/customer-notes-dialog';
 import type { Customer } from '@/types';
 import { Search, Plus, Trash2, Edit, UserPlus, FileText, RotateCcw, UserMinus } from 'lucide-react';
+import { DEFAULT_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/lib/constants';
 
 export default function DashboardPage() {
   const [page, setPage] = useState(1);
@@ -37,8 +38,8 @@ export default function DashboardPage() {
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
 
-  const debouncedSearch = useDebounce(search, 500);
-  const limit = 10;
+  const debouncedSearch = useDebounce(search, SEARCH_DEBOUNCE_MS);
+  const limit = DEFAULT_PAGE_SIZE;
 
   const { data, isLoading, error } = useCustomers({
     page,

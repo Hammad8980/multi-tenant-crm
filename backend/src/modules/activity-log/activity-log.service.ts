@@ -59,11 +59,7 @@ export class ActivityLogService {
   }
 
   // GET ACTIVITY LOGS BY ENTITY
-  async findByEntity(
-    entityType: string,
-    entityId: string,
-    currentUser: any,
-  ) {
+  async findByEntity(entityType: string, entityId: string, currentUser: any) {
     return await this.activityLogRepository.find({
       where: {
         entityType,

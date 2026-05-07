@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { BCRYPT_SALT_ROUNDS } from '../../common/constants';
 
 @Injectable()
 export class UsersService {
@@ -30,7 +31,10 @@ export class UsersService {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const hashedPassword = await bcrypt.hash(
+      createUserDto.password,
+      BCRYPT_SALT_ROUNDS,
+    );
 
     // Create user
     const user = this.userRepository.create({
@@ -44,6 +48,7 @@ export class UsersService {
     await this.userRepository.save(user);
 
     // Return user without password
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = user;
     return result;
   }
@@ -55,7 +60,15 @@ export class UsersService {
         // Multi-tenancy enforcement
         organizationId: currentUser.organizationId,
       },
-      select: ['id', 'name', 'email', 'role', 'organizationId', 'createdAt', 'updatedAt'],
+      select: [
+        'id',
+        'name',
+        'email',
+        'role',
+        'organizationId',
+        'createdAt',
+        'updatedAt',
+      ],
     });
 
     return users;
@@ -69,7 +82,15 @@ export class UsersService {
         // Multi-tenancy enforcement
         organizationId: currentUser.organizationId,
       },
-      select: ['id', 'name', 'email', 'role', 'organizationId', 'createdAt', 'updatedAt'],
+      select: [
+        'id',
+        'name',
+        'email',
+        'role',
+        'organizationId',
+        'createdAt',
+        'updatedAt',
+      ],
     });
 
     if (!user) {
@@ -87,7 +108,10 @@ export class UsersService {
 
     // If password is being updated, hash it
     if (updateUserDto.password) {
-      updateData.password = await bcrypt.hash(updateUserDto.password, 10);
+      updateData.password = await bcrypt.hash(
+        updateUserDto.password,
+        BCRYPT_SALT_ROUNDS,
+      );
     }
 
     await this.userRepository.update(

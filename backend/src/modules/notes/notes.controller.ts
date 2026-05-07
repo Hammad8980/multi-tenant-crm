@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { NotesService } from './notes.service';
@@ -25,7 +24,10 @@ export class NotesController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new note for a customer' })
-  create(@Body() createNoteDto: CreateNoteDto, @CurrentUser() currentUser: any) {
+  create(
+    @Body() createNoteDto: CreateNoteDto,
+    @CurrentUser() currentUser: any,
+  ) {
     return this.notesService.create(createNoteDto, currentUser);
   }
 

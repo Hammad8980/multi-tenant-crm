@@ -4,6 +4,7 @@ import { Organization } from '../../modules/organizations/entities/organization.
 import { User } from '../../modules/users/entities/user.entity';
 import { Customer } from '../../modules/customers/entities/customer.entity';
 import { Note } from '../../modules/notes/entities/note.entity';
+import { BCRYPT_SALT_ROUNDS } from '../../common/constants';
 
 // Load environment variables
 import * as dotenv from 'dotenv';
@@ -39,7 +40,7 @@ async function seed() {
   console.log('✅ Organizations created');
 
   // Create Users for Org1
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const hashedPassword = await bcrypt.hash('password123', BCRYPT_SALT_ROUNDS);
 
   const admin1 = dataSource.getRepository(User).create({
     name: 'John Admin',

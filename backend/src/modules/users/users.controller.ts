@@ -28,7 +28,10 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles('admin')
   @ApiOperation({ summary: 'Create a new user (Admin only)' })
-  create(@Body() createUserDto: CreateUserDto, @CurrentUser() currentUser: any) {
+  create(
+    @Body() createUserDto: CreateUserDto,
+    @CurrentUser() currentUser: any,
+  ) {
     return this.usersService.create(createUserDto, currentUser);
   }
 

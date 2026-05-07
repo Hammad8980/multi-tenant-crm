@@ -15,9 +15,7 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 @ApiTags('organizations')
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(
-    private readonly organizationsService: OrganizationsService,
-  ) {}
+  constructor(private readonly organizationsService: OrganizationsService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new organization' })

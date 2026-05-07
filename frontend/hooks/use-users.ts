@@ -32,8 +32,9 @@ export function useCreateUser() {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('User created successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to create user');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to create user');
     },
   });
 }
@@ -53,8 +54,9 @@ export function useUpdateUser() {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('User updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update user');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to update user');
     },
   });
 }
@@ -68,8 +70,9 @@ export function useDeleteUser() {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('User deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete user');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to delete user');
     },
   });
 }

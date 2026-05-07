@@ -20,8 +20,9 @@ export function useCreateNote() {
       queryClient.invalidateQueries({ queryKey: ['notes', variables.customerId] });
       toast.success('Note added successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to add note');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to add note');
     },
   });
 }
@@ -35,8 +36,9 @@ export function useDeleteNote() {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       toast.success('Note deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete note');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || 'Failed to delete note');
     },
   });
 }
